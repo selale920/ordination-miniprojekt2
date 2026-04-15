@@ -42,15 +42,69 @@ public class ServiceTest
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
-    public void TestAtKodenSmiderEnException()
+    public void OpretDagligSkaev()
     {
-        // Herunder skal man så kalde noget kode,
-        // der smider en exception.
+        var patient = service.GetPatienter().First();
+        var lm = service.GetLaegemidler().First();
+        int initialCount = service.GetDagligSkæve().Count();
 
-        // Hvis koden _ikke_ smider en exception,
-        // så fejler testen.
+        var doser = new Dosis[]
+        {
+            new Dosis(DateTime.Now, 1),
+            new Dosis(DateTime.Now.AddHours(1), 2),
+            new Dosis(DateTime.Now.AddHours(2), 3),
+        };
 
-        Console.WriteLine("Her kommer der ikke en exception. Testen fejler.");
+        var sk = service.OpretDagligSkaev(patient.PatientId, lm.LaegemiddelId, doser, DateTime.Now, DateTime.Now.AddDays(3));
+
+        Assert.IsTrue(sk.OrdinationId > 0);
+        Assert.AreEqual(initialCount + 1, service.GetDagligSkæve().Count());
     }
+
+    [TestMethod]
+    public void OpretPN()
+    {
+        var patient = service.GetPatienter().First();
+        var lm = service.GetLaegemidler().First();
+        int initialCount = service.GetPNs().Count();
+
+        var pn = service.OpretPN(patient.PatientId, lm.LaegemiddelId, 2, DateTime.Now, DateTime.Now.AddDays(3));
+
+        Assert.IsTrue(pn.OrdinationId > 0);
+        Assert.AreEqual(initialCount + 1, service.GetPNs().Count());
+    }
+
+    [TestMethod]
+    public void AnvendPN()
+    {
+        var patient = service.GetPatienter().First();
+        var lm = service.GetLaegemidler().First();
+
+        var pn = service.OpretPN(patient.PatientId, lm.LaegemiddelId, 2, DateTime.Now.AddDays(-1), DateTime.Now.AddDays(3));
+        int id = pn.OrdinationId;
+
+        Assert.AreEqual(0, pn.getAntalGangeGivet());
+
+        var response = service.AnvendOrdination(id, new Dato { dato = DateTime.Now });
+
+        Assert.AreEqual("dosis have been given", response);
+
+        pn = service.GetPNs().FirstOrDefault(x => x.OrdinationId == id);
+        Assert.AreEqual(1, pn.getAntalGangeGivet());
+    }
+    
+    
+    // [TestMethod]
+    // [ExpectedException(typeof(ArgumentNullException))]
+    // public void TestAtKodenSmiderEnException()
+    // {
+    //     // Herunder skal man så kalde noget kode,
+    //     // der smider en exception.
+    //
+    //     // Hvis koden _ikke_ smider en exception,
+    //     // så fejler testen.
+    //
+    //     Console.WriteLine("Her kommer der ikke en exception. Testen fejler.");
+    // }
+    
 }
