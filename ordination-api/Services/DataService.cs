@@ -183,6 +183,11 @@ public class DataService
         {
             throw new ArgumentException("Startdato må ikke være efter slutdato");
         }
+        
+        if (antalMorgen < 0 || antalMiddag < 0 || antalAften < 0 || antalNat < 0)
+        {
+            throw new ArgumentException("Doser må ikke være negative");
+        }
 
         Laegemiddel? laegemiddel = db.Laegemiddler.FirstOrDefault(x => x.LaegemiddelId == laegemiddelId);
         Patient? patient = db.Patienter.FirstOrDefault(p => p.PatientId == patientId);
