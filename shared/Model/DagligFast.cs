@@ -21,6 +21,7 @@ public class DagligFast : Ordination {
 	public override double samletDosis() {
 		
 		return base.antalDage() * doegnDosis();
+		
 	}
 
 	public override double doegnDosis()
@@ -36,4 +37,5 @@ public class DagligFast : Ordination {
 	public override String getType() {
 		return "DagligFast";
 	}
+	
 }

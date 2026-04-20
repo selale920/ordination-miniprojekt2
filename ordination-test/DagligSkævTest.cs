@@ -32,7 +32,7 @@ public class DaligSkævTest
         double doegnDosis = d.doegnDosis();
 
         // Assert
-        Assert.AreEqual(2.5, doegnDosis, 0.001); // ✅ now correct
+        Assert.AreEqual(2.5, doegnDosis, 0.001); 
     }
 
 
