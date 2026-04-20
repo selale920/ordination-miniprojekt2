@@ -7,7 +7,12 @@ public abstract class Ordination {
     public Laegemiddel laegemiddel { get; set; }
     
     public Ordination(Laegemiddel laegemiddel, DateTime startDen = new DateTime(), DateTime slutDen = new DateTime()) {
-    	this.startDen = startDen;
+    	
+        if (slutDen < startDen)
+        {
+            throw new ArgumentException("Slutdato kan ikke v�re f�r startdato");
+        }
+        this.startDen = startDen;
     	this.slutDen = slutDen;
         this.laegemiddel = laegemiddel;
     }
@@ -21,8 +26,7 @@ public abstract class Ordination {
     /// Antal hele dage mellem startdato og slutdato. Begge dage inklusive.
     /// </summary>
     public int antalDage() {
-        // TODO: Implement!
-        return -1;
+        return (slutDen - startDen).Days + 1;
     }
 
     public override String ToString() {
