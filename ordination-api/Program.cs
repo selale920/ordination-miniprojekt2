@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-
 using Service;
 using Data;
 using shared.Model;
@@ -10,14 +9,15 @@ var builder = WebApplication.CreateBuilder(args);
 var AllowCors = "_AllowCors";
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: AllowCors, builder => {
+    options.AddPolicy(name: AllowCors, builder =>
+    {
         builder.AllowAnyOrigin()
                .AllowAnyHeader()
                .AllowAnyMethod();
     });
 });
 
-// Tilføj DbContext factory som service.
+// Tilføj DbContext som service
 builder.Services.AddDbContext<OrdinationContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("ContextSQLite")));
 
@@ -26,9 +26,12 @@ builder.Services.AddScoped<DataService>();
 
 var app = builder.Build();
 
-// Seed data hvis nødvendigt.
+// Opret database / kør migrationer først, seed derefter
 using (var scope = app.Services.CreateScope())
 {
+    var db = scope.ServiceProvider.GetRequiredService<OrdinationContext>();
+    db.Database.Migrate();
+
     var dataService = scope.ServiceProvider.GetRequiredService<DataService>();
     dataService.SeedData();
 }
@@ -36,7 +39,7 @@ using (var scope = app.Services.CreateScope())
 app.UseHttpsRedirection();
 app.UseCors(AllowCors);
 
-// Middlware der kører før hver request. Sætter ContentType for alle responses til "JSON".
+// Middleware der kører før hver request. Sætter ContentType for alle responses til JSON.
 app.Use(async (context, next) =>
 {
     context.Response.ContentType = "application/json; charset=utf-8";
@@ -53,8 +56,9 @@ app.MapGet("/api/ordinationer", (DataService service) =>
     List<PN> pn = service.GetPNs();
     List<DagligFast> dagligFast = service.GetDagligFaste();
     List<DagligSkæv> dagligSkaev = service.GetDagligSkæve();
-    
-    return Results.Ok(new {
+
+    return Results.Ok(new
+    {
         pn,
         dagligFast,
         dagligSkaev
@@ -95,12 +99,12 @@ app.MapPost("/api/ordinationer/dagligskaev/", (DataService service, DagligSkaevD
 
 app.MapPut("/api/ordinationer/pn/{id}/anvend", (DataService service, int id, DateTimeDTO dto) =>
 {
-    return Results.Ok(new {msg = service.AnvendOrdination(id, new Dato{dato = dto.date})});
+    return Results.Ok(new { msg = service.AnvendOrdination(id, new Dato { dato = dto.date }) });
 });
 
 app.MapPost("/api/patienter/{id}/beregnAnbefaletDosisPerDøgn", (DataService service, int id, AnbefaletDosisDTO dto) =>
 {
-    double dosisStørrelse =  service.GetAnbefaletDosisPerDøgn(id, dto.laegemiddelId);
+    double dosisStørrelse = service.GetAnbefaletDosisPerDøgn(id, dto.laegemiddelId);
     AnbefaletDosisDTO response = new AnbefaletDosisDTO(dto.laegemiddelId, dosisStørrelse);
     return Results.Ok(response);
 });
